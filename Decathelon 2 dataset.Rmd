@@ -1,0 +1,229 @@
+---
+title: "Decathelon2"
+author: "Sushrut Jsohi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+```{r}
+library("factoextra")
+# Load the dataset
+athlete_data <- decathlon2
+# Display the structure of the dataset
+str(athlete_data)
+# number of observations and variables
+cat("Number of observations: ", nrow(athlete_data), "\n")
+cat("Number of variables: ", ncol(athlete_data), "\n")
+
+```
+
+
+```{r}
+# Q2 Statistics Summary of a numeric variable  
+
+# Calculate summary statistics
+javeline <- athlete_data$Javeline
+
+mean_javeline <- mean(javeline, na.rm = TRUE)
+median_javeline <- median(javeline, na.rm = TRUE)
+sd_javeline <- sd(javeline, na.rm = TRUE)
+min_javeline <- min(javeline, na.rm = TRUE)
+max_javeline <- max(javeline, na.rm = TRUE)
+
+# Create a table of results
+javeline_summary <- data.frame(
+  Statistic = c("Mean", "Median", "Standard Deviation", "Minimum", "Maximum"),
+  Value = c(mean_javeline, median_javeline, sd_javeline, min_javeline, max_javeline)
+)
+
+# Display the table
+print(javeline_summary)
+```
+
+
+```{r}
+
+# Set up a 1x2 grid for plots
+par(mfrow = c(1, 2))
+
+# Histogram for 'Javeline Records'
+hist(javeline, 
+     main = "Histogram of Javeline Records", 
+     xlab = "Javeline", 
+     col = "blue", 
+     border = "black")
+
+# Boxplot for 'Javeline Records'
+boxplot(javeline, 
+        main = "Boxplot of Javeline Records", 
+        ylab = "Javeline", 
+        col = "green")
+
+# Reset to default plotting layout
+par(mfrow = c(1, 1))
+
+
+```
+
+
+```{r}
+# Q4 Categorical Variable Analysis
+# Reset the graphics device to avoid issues
+dev.off()
+
+# Calculate frequency of each competition
+comp_count <- table(athlete_data$Competition)
+
+# Create a barplot and save the midpoints
+bp <- barplot(comp_count, 
+              main = "Distribution of Competitions", 
+              xlab = "Competition", 
+              ylab = "Frequency", 
+              col = c("yellow", "blue"), 
+              border = "black", 
+              ylim = c(0, max(comp_count) * 1.2))
+
+
+```
+
+
+```{r}
+# Q5 Correlation Analysis
+
+# Choose two numerical variables: Scores of X100m and Long jump
+X100m  <- athlete_data$X100m
+long_jump  <- athlete_data$Long.jump
+
+# Calculate the Pearson correlation coefficient
+correlation <- cor(X100m,long_jump, method = "pearson")
+
+# Display the correlation coefficient
+cat("Pearson correlation between Scores of X100m and Long Jump : ", correlation, "\n")
+```
+
+
+```{r}
+# Scatter plot using ggplot2
+library(ggplot2)
+
+# Create the plot
+ggplot(athlete_data, aes(x = Long.jump, y = X100m)) +
+  geom_point(color = "blue", size = 3) +        # Blue points for scatter
+  geom_smooth(method = "lm", color = "red", se = FALSE) + # Trend line
+  labs(title = "Scatter Plot of X100m vs Long Jump",
+       x = "Long Jump",
+       y = "X100m") +
+  theme_minimal() # Minimal theme for a clean look
+
+```
+
+
+```{r}
+# Load necessary library
+library(broom)
+
+# Fit the linear regression model
+model <- lm(X100m ~ Long.jump + Shot.put, data = athlete_data)
+
+# Extract the summary and convert to a tidy table
+model_summary <- tidy(model)
+
+# Print the table
+print(model_summary)
+
+```
+
+
+```{r}
+# Q8 Model Diagnostics
+# Load necessary libraries
+library(ggplot2)
+library(gridExtra)
+
+# Fit the model
+model <- lm(X100m ~ Long.jump + Shot.put, data = athlete_data)
+
+# Histogram and density plot of residuals
+hist_plot <- ggplot(data = data.frame(residuals = residuals(model)), aes(x = residuals)) +
+  geom_histogram(aes(y = ..density..), bins = 20, fill = "lightblue", color = "black") +
+  geom_density(color = "red", size = 1) +
+  labs(title = "Histogram and Density Plot of Residuals", x = "Residuals", y = "Density") +
+  theme_minimal()
+
+# Residuals vs Fitted Plot
+residuals_fitted_plot <- ggplot(data = data.frame(fitted = fitted(model), residuals = residuals(model)), 
+                                 aes(x = fitted, y = residuals)) +
+  geom_point(color = "blue", size = 2) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Residuals vs Fitted", x = "Fitted Values", y = "Residuals") +
+  theme_minimal()
+
+# Q-Q Plot of Residuals
+qq_plot <- ggplot(data = data.frame(residuals = residuals(model)), aes(sample = residuals)) +
+  stat_qq(color = "blue") +
+  stat_qq_line(color = "red", size = 1) +
+  labs(title = "Q-Q Plot of Residuals", x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_minimal()
+
+# Arrange the plots in a 1x3 grid
+grid.arrange(hist_plot, residuals_fitted_plot, qq_plot, ncol = 3)
+
+
+```
+
+
+```{r}
+# Q9 Principle Component Analysis 
+
+# Select the relevant numerical columns for PCA
+numerical_vars <- athlete_data[, c("X100m","Long.jump","Shot.put","High.jump","X400m","X110m.hurdle","Discus","Pole.vault","Javeline","X1500m","Rank","Points")]
+# Check for missing values
+sum(is.na(numerical_vars))
+# Replace missing values (if any) with the mean of the respective column
+for (col in colnames(numerical_vars)) 
+{
+  numerical_vars[is.na(numerical_vars[, col]), col] <- mean(numerical_vars[, col], na.rm = TRUE)
+}
+# Standardize the data (mean = 0, sd = 1)
+scaled_data <- scale(numerical_vars)
+
+# Perform PCA
+pca_result <- prcomp(scaled_data, center = TRUE, scale. = TRUE)
+
+# Print the summary of PCA to see explained variance
+summary(pca_result)
+
+# Plot the proportion of variance explained by each principal component
+
+# Extract the proportion of variance explained by each principal component
+explained_variance <- summary(pca_result)$importance[2, ]  # Second row corresponds to proportion of variance
+
+# Plot the proportion of variance explained
+plot(explained_variance, 
+     type = "o",             # "o" stands for both points and lines
+     col = "blue",           # Line color
+     pch = 16,               # Point type (filled circle)
+     xlab = "Principal Components", 
+     ylab = "Proportion of Variance Explained", 
+     main = "Proportion of Variance Explained by Each PC")
+```
+
+
+```{r}
+# Q10 PCA Interpretation 
+
+# Biplot to visualize PCA results
+biplot(pca_result, main = "PCA Biplot", col = c("blue", "red"))
+
+# Print the loadings of the first two principal components
+loadings <- pca_result$rotation
+print(loadings[, 1:2])  # Loadings for the first two principal components
+
+# Optionally, visualize the contribution of each variable to the first two PCs using a plot
+# This can be useful to understand how each variable is associated with PC1 and PC2
+loadings_pc1 <- loadings[, 1]
+loadings_pc2 <- loadings[, 2]
+
+
+
+```
+
