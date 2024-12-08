@@ -1,0 +1,256 @@
+---
+title: "Titanic code SSD"
+author: "Sushrut Jsohi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r}
+### Overview of dataset ###
+titanic = read.csv("C:/Users/sushrutjoshi/Downloads/Titanic-Dataset.csv")
+titanic <- na.omit(titanic)
+titanic
+```
+
+
+```{r}
+# Select the required columns from the Titanic dataset
+selected_columns <- titanic[, c("Age", "Fare", "Parch", "SibSp")]
+
+# Compute the summary for each column and bind them into one data frame
+summary_table <- do.call(cbind, lapply(selected_columns, summary))
+
+# Add row names as the summary statistics
+summary_table <- data.frame(Statistic = rownames(summary_table), summary_table, row.names = NULL)
+
+# Print the consolidated summary table
+print(summary_table)
+
+
+```
+
+
+```{r}
+# Load necessary library
+library(ggplot2)
+library(gridExtra)
+
+# Create histograms for each column
+plot_age <- ggplot(titanic, aes(x = Age)) +
+  geom_histogram(binwidth = 5, fill = "skyblue", color = "blue") +
+  labs(title = "Age", x = "Age", y = "Frequency")
+
+plot_fare <- ggplot(titanic, aes(x = Fare)) +
+  geom_histogram(binwidth = 10, fill = "orange", color = "blue") +
+  labs(title = "Fare", x = "Fare", y = "Frequency")
+
+plot_sibsp <- ggplot(titanic, aes(x = SibSp)) +
+  geom_histogram(binwidth = 1, fill = "lightgreen", color = "blue") +
+  labs(title = "Siblings/Spouse", x = "SibSp", y = "Frequency")
+
+plot_parch <- ggplot(titanic, aes(x = Parch)) +
+  geom_histogram(binwidth = 1, fill = "pink", color = "blue") +
+  labs(title = "Parents/Children", x = "Parch", y = "Frequency")
+
+# Arrange all histograms in a 2x2 grid
+grid.arrange(plot_age, plot_fare, plot_sibsp, plot_parch, nrow = 2)
+
+```
+
+
+```{r}
+# Load necessary library
+library(ggplot2)
+library(gridExtra)
+
+# Create boxplots for each column
+plot_age <- ggplot(titanic, aes(y = Age)) +
+  geom_boxplot(fill = "skyblue") +
+  labs(title = "Boxplot of Age", y = "Age") +
+  theme_minimal()
+
+plot_fare <- ggplot(titanic, aes(y = Fare)) +
+  geom_boxplot(fill = "orange") +
+  labs(title = "Boxplot of Fare", y = "Fare") +
+  theme_minimal()
+
+plot_parch <- ggplot(titanic, aes(y = Parch)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(title = "Boxplot of Parch", y = "Parch") +
+  theme_minimal()
+
+plot_sibsp <- ggplot(titanic, aes(y = SibSp)) +
+  geom_boxplot(fill = "pink") +
+  labs(title = "Boxplot of SibSp", y = "SibSp") +
+  theme_minimal()
+
+# Arrange all boxplots in a 2x2 grid
+grid.arrange(plot_age, plot_fare, plot_parch, plot_sibsp, nrow = 2)
+
+```
+
+
+
+```{r}
+# Select the relevant columns
+selected_columns <- titanic[, c("Age", "Fare", "SibSp", "Parch")]
+
+# Compute the correlation matrix
+correlation_matrix <- cor(selected_columns, method = "pearson", use = "complete.obs")
+
+# Convert the correlation matrix into a data frame for a tidy table
+correlation_table <- as.data.frame(as.table(correlation_matrix))
+
+# Rename the columns for better understanding
+colnames(correlation_table) <- c("Variable1", "Variable2", "Correlation")
+
+# Print the correlation table
+print(correlation_table)
+
+```
+
+
+```{r}
+# Load ggplot2 library
+library(ggplot2)
+
+# Scatter plot for Age vs Fare with regression line
+ggplot(titanic, aes(x = Age, y = Fare)) +
+  geom_point(color = "blue") +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  labs(title = "Scatter Plot of Age vs Fare", x = "Age", y = "Fare") +
+  theme_minimal()
+
+
+```
+
+
+```{r}
+### Numeric - Categorical variables ###
+# Average Fare for each sex
+avg_fare_by_sex <- aggregate(Fare ~ Sex, data = titanic, FUN = mean)
+sex <- avg_fare_by_sex$Sex
+avg_fare <- avg_fare_by_sex$Fare
+barplot(avg_fare, names.arg = sex, col = c("skyblue", "lightgreen", "orange"), main = "Average Fare by Sex", xlab = "Sex", ylab = "Average Fare")
+```
+
+
+```{r}
+
+# Set up a 3x2 grid layout
+par(mfrow = c(3, 2), mar = c(4, 4, 2, 1))  # Adjust margins
+
+# Barplot 1: Average Fare by Sex
+avg_fare_by_sex <- aggregate(Fare ~ Sex, data = titanic, FUN = mean)
+sex <- avg_fare_by_sex$Sex
+avg_fare <- avg_fare_by_sex$Fare
+barplot(avg_fare, names.arg = sex, col = c("steelblue", "gold"), 
+        main = "Average Fare by Sex", xlab = "Sex", ylab = "Average Fare")
+
+# Barplot 2: Average Fare by Embarked
+avg_fare_by_embarked <- aggregate(Fare ~ Embarked, data = titanic, FUN = mean)
+embarked <- avg_fare_by_embarked$Embarked
+avg_fare <- avg_fare_by_embarked$Fare
+barplot(avg_fare, names.arg = embarked, col = c("steelblue", "gold", "tomato"), 
+        main = "Average Fare by Embarked", xlab = "Embarked", ylab = "Average Fare")
+
+# Barplot 3: Average SibSp by Embarked
+avg_sibsp_by_embarked <- aggregate(SibSp ~ Embarked, data = titanic, FUN = mean)
+embarked <- avg_sibsp_by_embarked$Embarked
+avg_sibsp <- avg_sibsp_by_embarked$SibSp
+barplot(avg_sibsp, names.arg = embarked, col = c("steelblue", "gold", "tomato"), 
+        main = "Average SibSp by Embarked", xlab = "Embarked", ylab = "Average SibSp")
+
+# Barplot 4: Average SibSp by Sex
+avg_sibsp_by_sex <- aggregate(SibSp ~ Sex, data = titanic, FUN = mean)
+sex <- avg_sibsp_by_sex$Sex
+avg_sibsp <- avg_sibsp_by_sex$SibSp
+barplot(avg_sibsp, names.arg = sex, col = c("steelblue", "gold"), 
+        main = "Average SibSp by Sex", xlab = "Sex", ylab = "Average SibSp")
+
+# Barplot 5: Average Parch by Sex
+avg_parch_by_sex <- aggregate(Parch ~ Sex, data = titanic, FUN = mean)
+sex <- avg_parch_by_sex$Sex
+avg_parch <- avg_parch_by_sex$Parch
+barplot(avg_parch, names.arg = sex, col = c("steelblue", "gold"), 
+        main = "Average Parch by Sex", xlab = "Sex", ylab = "Average Parch")
+
+# Barplot 6: Average Parch by Embarked
+avg_parch_by_embarked <- aggregate(Parch ~ Embarked, data = titanic, FUN = mean)
+embarked <- avg_parch_by_embarked$Embarked
+avg_parch <- avg_parch_by_embarked$Parch
+barplot(avg_parch, names.arg = embarked, col = c("steelblue", "gold", "tomato"), 
+        main = "Average Parch by Embarked", xlab = "Embarked", ylab = "Average Parch")
+
+# Reset layout to default
+par(mfrow = c(1, 1))
+
+```
+
+
+```{r}
+### Categorical - Categorical Analysis ###
+table(titanic$Sex, titanic$Embarked)
+table(titanic$Sex, titanic$SibSp)
+table(titanic$Sex, titanic$Parch)
+table(titanic$Embarked, titanic$SibSp)
+table(titanic$Embarked, titanic$Parch)
+table(titanic$SibSp, titanic$Parch)
+```
+
+
+```{r}
+### Multiple Regression ###
+# Fit the linear model
+model <- lm(Fare ~ Age + SibSp + Parch, data = titanic)
+
+# Extract the model summary
+model_summary <- summary(model)
+
+# Create a data frame with coefficients, standard errors, t-values, and p-values
+summary_table <- data.frame(
+  Term = rownames(model_summary$coefficients),
+  Estimate = model_summary$coefficients[, "Estimate"],
+  StdError = model_summary$coefficients[, "Std. Error"],
+  tValue = model_summary$coefficients[, "t value"],
+  pValue = model_summary$coefficients[, "Pr(>|t|)"]
+)
+
+# Print the summary table
+print(summary_table)
+
+# Set up a 2x2 grid layout for the plots
+par(mfrow = c(2, 2))
+
+# Plot diagnostic plots for the model
+plot(model)
+
+# Reset layout to default (optional)
+par(mfrow = c(1, 1))
+
+
+```
+
+
+```{r}
+##### Advanced Analysis #####
+### Principal Component Analysis ###
+numerical_vars <- c("Age", "SibSp", "Parch", "Fare")
+titanic_num <- titanic[, numerical_vars]
+
+titanic.pc <- princomp(titanic_num, cor=T)
+summary(titanic.pc,loadings=T)
+```
+
+
+```{r}
+plot(1:(length(titanic.pc$sdev)), (titanic.pc$sdev)^2, type='b', main="Scree Plot", xlab="Number of Components", ylab="Eigenvalue Size")
+
+```
+
+
+```{r}
+biplot(titanic.pc, xlim=c(-0.1,0.1), ylim=c(-0.1,0.1))
+```
+

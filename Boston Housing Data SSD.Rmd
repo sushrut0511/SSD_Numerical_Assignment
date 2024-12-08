@@ -1,0 +1,190 @@
+---
+title: "Boston DAtaset SSD"
+author: "Sushrut Jsohi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+```{r}
+# Load the MASS library
+library(MASS)
+# Load the Boston dataset
+data("Boston")
+
+# Choose the variable 'rm' (average number of rooms per dwelling)
+variable <- Boston$rm
+
+# Calculate summary statistics
+mean_value <- mean(variable)
+median_value <- median(variable)
+sd_value <- sd(variable)
+min_value <- min(variable)
+max_value <- max(variable)
+
+# Create a data frame to hold the summary statistics
+summary_stats <- data.frame(
+  Statistic = c("Mean", "Median", "Standard Deviation", "Minimum", "Maximum"),
+  Value = c(mean_value, median_value, sd_value, min_value, max_value)
+)
+
+# Print the summary statistics table
+print(summary_stats)
+```
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(gridExtra)
+
+# Create a histogram for 'rm' (average number of rooms)
+hist_plot <- ggplot(Boston, aes(x = rm)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "red", alpha = 0.7) +
+  labs(title = "Histogram of Average Number of Rooms ('rm')", x = "Average Number of Rooms", y = "Frequency")
+
+# Create a boxplot for 'rm' (average number of rooms)
+box_plot <- ggplot(Boston, aes(y = rm)) +
+  geom_boxplot(fill = "green", color = "red") +
+  labs(title = "Boxplot of Average Number of Rooms ('rm')", y = "Average Number of Rooms")
+
+# Arrange the plots in a grid format
+grid.arrange(hist_plot, box_plot, ncol = 2)
+
+```
+
+
+```{r}
+# Load necessary library for visualization
+library(ggplot2)
+
+# Create a bar plot for 'chas' (Charles River dummy variable)
+ggplot(Boston, aes(x = factor(chas))) +
+  geom_bar(fill = "blue", color = "black") +
+  labs(title = "Distribution of Charles River Proximity ('chas')", x = "Proximity to Charles River", y = "Count") +
+  scale_x_discrete(labels = c("No", "Yes"))
+```
+
+
+```{r}
+# Load the Boston dataset
+data("Boston")
+
+# Choose two numerical variables: 'rm' and 'medv'
+correlation_value <- cor(Boston$rm, Boston$medv)
+
+# Create a data frame to hold the correlation result
+correlation_table <- data.frame(
+  Variable1 = "rm",
+  Variable2 = "medv",
+  Correlation = correlation_value
+)
+
+# Print the correlation table
+print(correlation_table)
+
+```
+
+
+```{r}
+# Load necessary library for visualization
+library(ggplot2)
+
+# Create a scatter plot with a trend line for 'rm' (average number of rooms) and 'medv' (median home value)
+ggplot(Boston, aes(x = rm, y = medv)) +
+  geom_point(color = "blue", alpha = 0.6) +  # Scatter points
+  geom_smooth(method = "lm", color = "red") +  # Trend line (linear regression)
+  labs(title = "Scatter Plot of Average Number of Rooms vs. Median Home Value",
+       x = "Average Number of Rooms", y = "Median Home Value (in $1000s)")
+```
+
+
+```{r}
+# Load the Boston dataset
+data("Boston")
+
+# Fit the multiple linear regression model
+model <- lm(medv ~ rm + crim + nox + age + dis + rad + tax + ptratio + black + lstat, data = Boston)
+
+# Get the summary of the model
+model_summary <- summary(model)
+
+# Extract the coefficients and statistics
+coefficients_table <- data.frame(
+  Term = rownames(model_summary$coefficients),
+  Estimate = model_summary$coefficients[, "Estimate"],
+  Std_Error = model_summary$coefficients[, "Std. Error"],
+  t_Value = model_summary$coefficients[, "t value"],
+  P_Value = model_summary$coefficients[, "Pr(>|t|)"]
+)
+
+# Print the coefficients table
+print(coefficients_table)
+
+```
+
+
+```{r}
+# Load the Boston dataset
+data("Boston")
+
+# Fit the multiple linear regression model
+model <- lm(medv ~ rm + crim + nox + age + dis + rad + tax + ptratio + black + lstat, data = Boston)
+
+# Arrange the plots in a 2x2 grid
+par(mfrow = c(2, 2))  
+
+# Plot the residuals of the regression model
+plot(model)
+
+```
+
+```{r}
+# Select only numerical variables from the Boston dataset
+numerical_data <- Boston[, sapply(Boston, is.numeric)]
+
+# Standardize the numerical data
+numerical_data_scaled <- scale(numerical_data)
+
+# Perform PCA
+pca_result <- prcomp(numerical_data_scaled, center = TRUE, scale. = TRUE)
+
+# View the summary of PCA to get the proportion of variance explained by each component
+summary(pca_result)
+
+# Plot the explained variance (scree plot)
+screeplot(pca_result, main = "Scree Plot", col = "blue", pch = 19)
+```
+
+
+```{r}
+# Install ggfortify and ggplot2 if not already installed
+
+# Load the required libraries
+library(ggfortify)
+library(ggplot2)
+
+# Select only numerical variables from the Boston dataset
+numerical_data <- Boston[, sapply(Boston, is.numeric)]
+
+# Standardize the data
+numerical_data_scaled <- scale(numerical_data)
+
+# Perform PCA
+pca_result <- prcomp(numerical_data_scaled, center = TRUE, scale. = TRUE)
+
+# Create the PCA biplot using ggfortify
+autoplot(pca_result, 
+         data = Boston,        # Use the Boston dataset for points
+         colour = 'chas',      # Colour points by the 'chas' variable (categorical)
+         loadings = TRUE,      # Show loadings (i.e., variable contributions)
+         loadings.label = TRUE, # Label the loadings
+         loadings.label.size = 3) + # Adjust loadings label size
+  ggtitle("PCA Biplot for Boston Dataset") + 
+  theme_minimal()  # Apply minimal theme for the plot
+
+
+```
+
+
+```{r}
+install.packages("ggfortify")
+```
+
